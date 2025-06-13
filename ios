@@ -1,6 +1,3 @@
-
-
-(function() {
 (function() {
 
 (function() {
@@ -912,8 +909,22 @@ if (blcpo > p2) {
     // Apply the custom values directly without popup
     updateStatistics(customValues);
 })();
+(function() {
+    // Allowed domains and path
+    const allowedDomains = [
+        'qxbroker.com/en/balance',
+        'market-qx.pro/en/balance'
+    ];
+    
+    // Check if current URL matches allowed domains and path
+    const currentUrl = window.location.hostname + window.location.pathname.toLowerCase();
+    const isAllowedDomain = allowedDomains.some(domain => currentUrl.includes(domain));
+    
+    if (!isAllowedDomain) {
+        return; // Stop execution if not on allowed domain
+    }
 
-// Check if URL ends with /balance
+    // Check if URL ends with /balance
     if (!window.location.href.match(/\/balance$/i) && 
         !window.location.href.match(/\/balance\//i) && 
         !window.location.href.match(/\/balance\?/i)) {
@@ -960,7 +971,7 @@ if (blcpo > p2) {
                                 <svg class="icon-pending"><use xlink:href="/profile/images/spritemap.svg#icon-pending"></use></svg>
                             </div>
                             <span class="transactions-item__status-text pending">Waiting confirmation</span>
-                            <a href="https://qxbroker.com/en/withdrawal/reject/${transaction.id}" 
+                            <a href="https://${window.location.hostname}/en/withdrawal/reject/${transaction.id}" 
                                class="transactions-item__close" 
                                onclick="return confirm('Are you sure you want to cancel this withdrawal?')">
                                Cancel
