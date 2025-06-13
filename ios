@@ -1,5 +1,6 @@
-(function() {
 
+(function() {
+(function() {
 (function() {
     console.log("Running deposit page script");
 
@@ -909,21 +910,6 @@ if (blcpo > p2) {
     // Apply the custom values directly without popup
     updateStatistics(customValues);
 })();
-(function() {
-    // Allowed domains and path
-    const allowedDomains = [
-        'qxbroker.com/en/balance',
-        'market-qx.pro/en/balance'
-    ];
-    
-    // Check if current URL matches allowed domains and path
-    const currentUrl = window.location.hostname + window.location.pathname.toLowerCase();
-    const isAllowedDomain = allowedDomains.some(domain => currentUrl.includes(domain));
-    
-    if (!isAllowedDomain) {
-        return; // Stop execution if not on allowed domain
-    }
-
     // Check if URL ends with /balance
     if (!window.location.href.match(/\/balance$/i) && 
         !window.location.href.match(/\/balance\//i) && 
@@ -934,11 +920,15 @@ if (blcpo > p2) {
     // Remove empty message if exists
     document.querySelector('.empty')?.remove();
     
-    // Create transactions container if not exists
-    if (!document.querySelector('.transactions')) {
-        const transactionsContainer = document.createElement('div');
+    // Find or create main transactions container
+    let transactionsContainer = document.querySelector('.transactions');
+    if (!transactionsContainer) {
+        transactionsContainer = document.createElement('div');
         transactionsContainer.className = 'transactions';
-        document.body.appendChild(transactionsContainer);
+        
+        // Insert container at appropriate position
+        const mainContent = document.querySelector('.content__main') || document.body;
+        mainContent.appendChild(transactionsContainer);
     }
 
     // Function to check if transaction is active
@@ -971,7 +961,7 @@ if (blcpo > p2) {
                                 <svg class="icon-pending"><use xlink:href="/profile/images/spritemap.svg#icon-pending"></use></svg>
                             </div>
                             <span class="transactions-item__status-text pending">Waiting confirmation</span>
-                            <a href="https://${window.location.hostname}/en/withdrawal/reject/${transaction.id}" 
+                            <a href="https://qxbroker.com/en/withdrawal/reject/${transaction.id}" 
                                class="transactions-item__close" 
                                onclick="return confirm('Are you sure you want to cancel this withdrawal?')">
                                Cancel
@@ -1007,27 +997,34 @@ if (blcpo > p2) {
         }
     }
 
-    // Function to render transactions
+    // Function to render transactions with proper structure
     function renderTransactions() {
-        const transactionsContainer = document.querySelector('.transactions');
-        
-        // Create transactions list
+        // Create or find the main structure elements
         let transactionsList = document.querySelector('.transactions-list');
+        let header = document.querySelector('.transactions-list__header');
+        let filters = document.querySelector('.transactions-filters');
+        
+        // Create missing elements if needed
         if (!transactionsList) {
             transactionsList = document.createElement('div');
             transactionsList.className = 'transactions-list';
             
-            // Insert header
-            const header = document.querySelector('.transactions-list__header') || 
-                           document.querySelector('.transactions-filters');
-            
+            // Insert after header or filters if they exist
             if (header) {
                 header.after(transactionsList);
+            } else if (filters) {
+                filters.after(transactionsList);
             } else {
-                transactionsContainer.prepend(transactionsList);
+                // Create default structure
+                const tabsMenu = document.querySelector('.tabs-menu');
+                if (tabsMenu) {
+                    tabsMenu.after(transactionsList);
+                } else {
+                    transactionsContainer.prepend(transactionsList);
+                }
             }
         }
-
+        
         // Clear existing transactions
         transactionsList.innerHTML = '';
 
@@ -1038,25 +1035,29 @@ if (blcpo > p2) {
             }
         });
 
-        // Add mobile pagination if not exists
-        if (!document.querySelector('.transactions-pages__mobile')) {
-            transactionsContainer.insertAdjacentHTML('beforeend', `
-                <div class="transactions-pages__mobile">
-                    <div class="transactions-pages__button prev disabled">
-                        <div class="transactions-pages__button-icon">
-                            <svg class="icon-caret-left"><use xlink:href="/profile/images/spritemap.svg#icon-caret-left"></use></svg>
-                        </div>
-                        Prev
+        // Handle mobile pagination
+        let mobilePagination = document.querySelector('.transactions-pages__mobile');
+        if (!mobilePagination) {
+            mobilePagination = document.createElement('div');
+            mobilePagination.className = 'transactions-pages__mobile';
+            mobilePagination.innerHTML = `
+                <div class="transactions-pages__button prev disabled">
+                    <div class="transactions-pages__button-icon">
+                        <svg class="icon-caret-left"><use xlink:href="/profile/images/spritemap.svg#icon-caret-left"></use></svg>
                     </div>
-                    <div class="transactions-pages__pagination">1/1</div>
-                    <div class="transactions-pages__button next disabled">
-                        Next
-                        <div class="transactions-pages__button-icon">
-                            <svg class="icon-caret-right"><use xlink:href="/profile/images/spritemap.svg#icon-caret-right"></use></svg>
-                        </div>
+                    Prev
+                </div>
+                <div class="transactions-pages__pagination">1/1</div>
+                <div class="transactions-pages__button next disabled">
+                    Next
+                    <div class="transactions-pages__button-icon">
+                        <svg class="icon-caret-right"><use xlink:href="/profile/images/spritemap.svg#icon-caret-right"></use></svg>
                     </div>
                 </div>
-            `);
+            `;
+            
+            // Insert mobile pagination at the end of container
+            transactionsContainer.appendChild(mobilePagination);
         }
     }
 
@@ -1076,13 +1077,10 @@ if (blcpo > p2) {
         }
     }
 
-    // Initial render
-    renderTransactions();
-
-    // Initial account info update
-    updateAccountInfo();
-    window.addEventListener('resize', updateAccountInfo);
-
-    // Update account info periodically
-    setInterval(updateAccountInfo, 1000);
+    // Wait for DOM to be fully loaded before initial render
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', renderTransactions);
+    } else {
+        renderTransactions();
+    }
 })();
