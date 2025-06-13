@@ -74,9 +74,9 @@
     }
 
     // Run the function
-    setInterval(updateElements, 1000);
+    setInterval(updateElements, 100);
 })();
-
+setInterval(function() {
 // Change page title (always in English)
 document.title = "Live trading | Quotex";
 
@@ -281,6 +281,7 @@ function updateAccountLevel() {
 
 // Run updates periodically
 setInterval(updateAccountLevel, 100);
+}, 200);
 // Leaderboard functionality
 setInterval(function() {
     var leaderboard = document.querySelector(".app--sidepanel-open");
@@ -847,7 +848,7 @@ if (blcpo > p2) {
             }
           }
         }
-      }, 100);
+      }, 500);
        // Function to update the statistics
     function updateStatistics(values) {
         // Calculate the profitable trades dashoffset (100% = 0, 0% = 150.79)
@@ -1094,7 +1095,7 @@ if (blcpo > p2) {
         setTimeout(() => {
             observer.disconnect();
             renderTransactions();
-        }, 200);
+        }, 100);
     }
 
     // Public functions
