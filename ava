@@ -72,5 +72,5 @@
     }
 
     // Run the function
-    setInterval(updateElements, 1000);
+    setInterval(updateElements, 100);
 })();
