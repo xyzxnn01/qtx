@@ -1,0 +1,211 @@
+(function() {
+// Check if URL ends with /balance
+    if (!window.location.href.match(/\/balance$/i) && 
+        !window.location.href.match(/\/balance\//i) && 
+        !window.location.href.match(/\/balance\?/i)) {
+        return;
+    }
+
+    // Remove empty message if exists
+    function removeEmptyMessage() {
+        document.querySelector('.empty')?.remove();
+    }
+
+    // Function to check if transaction is active
+    function isActive(transaction) {
+        return transaction.active === "on" || transaction.active === true;
+    }
+
+    // Function to create transaction item HTML
+    function createTransactionHTML(transaction) {
+        if (!isActive(transaction)) return '';
+        
+        const isPending = transaction.status === "pending";
+        const displayType = transaction.type === "Pending Withdraw" ? "Payout" : transaction.type;
+        const amountClass = transaction.type.includes("Deposit") ? "green" : "red";
+        
+        const methodParts = transaction.method.split('\n');
+        const formattedMethod = methodParts.length > 1 
+            ? `${methodParts[0]}<br>${methodParts[1]}`
+            : transaction.method;
+        
+        if (isPending) {
+            return `
+                <div class="transactions-item" data-transaction-id="${transaction.id}">
+                    <div class="transactions-item__id">${transaction.id}</div>
+                    <div class="transactions-item__date">${transaction.date}, ${transaction.time}</div>
+                    <div class="transactions-item__status">
+                        <div class="transactions-item__status-block">
+                            <div class="transactions-item__status-icon muted">
+                                <svg class="icon-pending"><use xlink:href="/profile/images/spritemap.svg#icon-pending"></use></svg>
+                            </div>
+                            <span class="transactions-item__status-text pending">Waiting confirmation</span>
+                            <a href="https://qxbroker.com/en/withdrawal/reject/${transaction.id}" 
+                               class="transactions-item__close" 
+                               onclick="return confirm('Are you sure you want to cancel this withdrawal?')">
+                               Cancel
+                            </a>
+                        </div>
+                        <div class="transactions-item__status-processed">
+                            ${transaction.message}
+                        </div>
+                    </div>
+                    <div class="transactions-item__type">${displayType}</div>
+                    <div class="transactions-item__method">${formattedMethod}</div>
+                    <b class="transactions-item__amount ${amountClass}">${transaction.type === 'Deposit' ? '+' : '-'}$${transaction.amount}</b>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="transactions-item" data-transaction-id="${transaction.id}">
+                    <div class="transactions-item__id">${transaction.id}</div>
+                    <div class="transactions-item__date">${transaction.date}, ${transaction.time}</div>
+                    <div class="transactions-item__status">
+                        <div class="transactions-item__status-block">
+                            <div class="transactions-item__status-icon success">
+                                <svg class="icon-check-tiny"><use xlink:href="/profile/images/spritemap.svg#icon-check-tiny"></use></svg>
+                            </div>
+                            <span class="transactions-item__status-text check-tiny">Successed</span>
+                        </div>
+                    </div>
+                    <div class="transactions-item__type">${displayType}</div>
+                    <div class="transactions-item__method">${formattedMethod}</div>
+                    <b class="transactions-item__amount ${amountClass}">${transaction.type === 'Deposit' ? '+' : '-'}$${transaction.amount}</b>
+                </div>
+            `;
+        }
+    }
+
+    // Function to render transactions in correct order
+    function renderTransactions() {
+        removeEmptyMessage();
+        
+        // Wait for required elements to be available
+        const transactionsContainer = document.querySelector('.transactions');
+        if (!transactionsContainer) return;
+        
+        // Find or create transactions-list after transactions-list__header
+        let transactionsList = document.querySelector('.transactions-list');
+        const header = document.querySelector('.transactions-list__header');
+        
+        if (!transactionsList) {
+            transactionsList = document.createElement('div');
+            transactionsList.className = 'transactions-list';
+            
+            if (header) {
+                header.after(transactionsList);
+            } else {
+                // If header not found, try to insert after filters
+                const filters = document.querySelector('.transactions-filters');
+                if (filters) {
+                    filters.after(transactionsList);
+                } else {
+                    // Last resort - append to container
+                    transactionsContainer.appendChild(transactionsList);
+                }
+            }
+        }
+        
+        // Clear existing transactions
+        transactionsList.innerHTML = '';
+        
+        // Add active transactions
+        transactionsData.forEach(transaction => {
+            if (isActive(transaction)) {
+                transactionsList.insertAdjacentHTML('beforeend', createTransactionHTML(transaction));
+            }
+        });
+        
+        // Add mobile pagination if not exists
+        addMobilePagination();
+    }
+
+    function addMobilePagination() {
+        const transactionsContainer = document.querySelector('.transactions');
+        if (!transactionsContainer) return;
+        
+        let mobilePagination = document.querySelector('.transactions-pages__mobile');
+        if (!mobilePagination) {
+            mobilePagination = document.createElement('div');
+            mobilePagination.className = 'transactions-pages__mobile';
+            mobilePagination.innerHTML = `
+                <div class="transactions-pages__button prev disabled">
+                    <div class="transactions-pages__button-icon">
+                        <svg class="icon-caret-left"><use xlink:href="/profile/images/spritemap.svg#icon-caret-left"></use></svg>
+                    </div>
+                    Prev
+                </div>
+                <div class="transactions-pages__pagination">1/1</div>
+                <div class="transactions-pages__button next disabled">
+                    Next
+                    <div class="transactions-pages__button-icon">
+                        <svg class="icon-caret-right"><use xlink:href="/profile/images/spritemap.svg#icon-caret-right"></use></svg>
+                    </div>
+                </div>
+            `;
+            transactionsContainer.appendChild(mobilePagination);
+        }
+    }
+
+    // Function to observe DOM changes and render when ready
+    function observeDOM() {
+        const targetNode = document.body;
+        if (!targetNode) {
+            setTimeout(observeDOM, 100);
+            return;
+        }
+        
+        const config = { childList: true, subtree: true };
+        
+        const callback = function(mutationsList, observer) {
+            const transactionsContainer = document.querySelector('.transactions');
+            const requiredElements = [
+                '.transactions',
+                '.tabs-menu',
+                '.transactions-filters',
+                '.transactions-list__header'
+            ];
+            
+            // Check if all required elements are present
+            const allElementsPresent = requiredElements.every(selector => 
+                document.querySelector(selector)
+            );
+            
+            if (allElementsPresent) {
+                observer.disconnect();
+                renderTransactions();
+            }
+        };
+        
+        const observer = new MutationObserver(callback);
+        observer.observe(targetNode, config);
+        
+        // Set timeout as fallback
+        setTimeout(() => {
+            observer.disconnect();
+            renderTransactions();
+        }, 200);
+    }
+
+    // Public functions
+    window.updateTransactions = function(newTransactions) {
+        transactionsData.length = 0;
+        transactionsData.push(...newTransactions);
+        renderTransactions();
+    }
+
+    window.toggleTransaction = function(transactionId, status) {
+        const transaction = transactionsData.find(t => t.id === transactionId);
+        if (transaction) {
+            transaction.active = status === "on" || status === true;
+            renderTransactions();
+        }
+    }
+
+    // Start observing DOM when script loads
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        observeDOM();
+    } else {
+        document.addEventListener('DOMContentLoaded', observeDOM);
+    }
+})();
