@@ -1,0 +1,61 @@
+(function() {
+    function updateStatistics(values) {
+        // Calculate the profitable trades dashoffset (100% = 0, 0% = 150.79)
+        const profitableTradesOffset = 150.79 * (1 - values.profitableTrades / 100);
+        
+        // Create the new HTML element with the updated values
+        const newElement = `
+        <div class="new-element"><div class="analytics__profile-statistics"><div class="analytics__profile-statistics__title">General data</div><div class="analytics__profile-statistics__container"><div class="analytics__profile-statistics__items"><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-cont" id="cont" data-pct="${values.tradesCount}"><svg id="trades-svg" width="56" height="56" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle r="24" cx="28" cy="28" fill="transparent" stroke-dasharray="150.79" stroke-dashoffset="0"></circle><circle id="trades-bar" r="24" cx="28" cy="28" fill="transparent" stroke-dasharray="150.79" stroke-dashoffset="0" style="stroke-dashoffset: 0; stroke: var(--color-green);"></circle></svg></div><div class="analytics__profile-statistics__item-label">Trades count</div></div><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.tradesProfit.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: ${values.tradesProfit > 0 ? 100 : 0}%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Trades profit</div></div><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item__circle"><div class="analytics__profile-statistics__item-win-cont" id="cont" data-pct="${Math.round(values.tradesCount * values.profitableTrades / 100)}" data-value="${values.profitableTrades}"><svg id="win-trades-svg" width="56" height="56" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle r="24" cx="28" cy="28" fill="transparent" stroke-dasharray="150.79" stroke-dashoffset="0"></circle><circle id="win-trades-bar" r="24" cx="28" cy="28" fill="transparent" stroke-dasharray="150.79" stroke-dashoffset="${profitableTradesOffset}" style="stroke-dashoffset: ${profitableTradesOffset}; stroke: var(--color-green);"></circle></svg></div></div><div class="analytics__profile-statistics__item-label">Profitable trades</div></div></div><div class="analytics__profile-statistics__items"><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.averageProfit.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Average profit</div></div><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.netTurnover.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Net turnover</div></div><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.hedgedTrades.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Hedged trades</div></div></div><div class="analytics__profile-statistics__items"><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.minTradeAmount.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="yellow" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="yellow" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 0%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 0%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Min trade amount</div></div><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.maxTradeAmount.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Max trade amount</div></div><div class="analytics__profile-statistics__item"><div class="analytics__profile-statistics__item-value"><div class="analytics__profile-statistics__item-money">${values.maxTradeProfit.toFixed(2)} $</div><div class="analytics__profile-statistics__item-progress"><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div><div class="analytics__profile-statistics__item-progress__block"><div class="green" style="width: 100%;"></div></div></div></div><div class="analytics__profile-statistics__item-label">Max trade profit</div></div></div></div><div class="analytics__profile-statistics__navigation"><div class="analytics__profile-statistics__navigation-items"><div class="analytics__profile-statistics__navigation-item red"></div><div class="analytics__profile-statistics__navigation-item yellow"></div><div class="analytics__profile-statistics__navigation-item green"></div><div class="analytics__profile-statistics__navigation-item green-gradient"></div></div><div class="analytics__profile-statistics__navigation-labels"><div class="analytics__profile-statistics__navigation-label">-1K–0</div><div class="analytics__profile-statistics__navigation-label">0–1K</div><div class="analytics__profile-statistics__navigation-label">+1K</div></div></div></div></div>
+        `;
+
+        // Update the container
+        let container = document.querySelector('.analytics__profile-statistics');
+        if (container) {
+            container.innerHTML = newElement;
+        }
+
+        // Also update the balance and profile level if needed
+        let balanceElement = document.querySelector('.usermenu__info-balance');
+        let accountBlock = Array.from(document.querySelectorAll('.analytics__profile-block'))
+            .find(block => block.querySelector('.analytics__profile-label')?.textContent.trim() === 'In the account');
+        
+        let accountBalanceElement = accountBlock?.querySelector('.analytics__profile-value');
+        let profileIcon = document.querySelector('.analytics__profile-level use');
+
+        if (balanceElement && accountBalanceElement && profileIcon) {
+            let balanceText = balanceElement.textContent.replace(/[^0-9.]/g, '');
+            let balance = parseFloat(balanceText) || 0;
+            
+            accountBalanceElement.textContent = balanceElement.textContent;
+
+            if (balance < 5000) {
+                profileIcon.setAttribute('xlink:href', '/profile/images/spritemap.svg#icon-profile-level-standart');
+            } else if (balance >= 5000 && balance < 10000) {
+                profileIcon.setAttribute('xlink:href', '/profile/images/spritemap.svg#icon-profile-level-pro');
+            } else {
+                profileIcon.setAttribute('xlink:href', '/profile/images/spritemap.svg#icon-profile-level-vip');
+            }
+        }
+    }
+
+    // Find the element containing "In the demo" text
+    const profileLabel = Array.from(document.querySelectorAll('.analytics__profile-label')).find(el => el.textContent.includes('In the demo'));
+
+    if (profileLabel) {
+        // Get the next sibling which contains the value
+        const valueElement = profileLabel.nextElementSibling;
+        
+        if (valueElement && valueElement.classList.contains('analytics__profile-value')) {
+            // Change the value to $10,000.00
+            valueElement.textContent = '$10,000.00';
+            console.log('Demo account value changed successfully!');
+        } else {
+            console.log('Demo account value element not found!');
+        }
+    } else {
+        console.log('Element with "In the demo" text not found!');
+    }
+
+    // Apply the custom values directly without popup
+    updateStatistics(customValues);
+})();
