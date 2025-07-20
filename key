@@ -1,0 +1,70 @@
+(async function() {
+    // Load SweetAlert2 if not already loaded
+    if (typeof Swal === 'undefined') {
+        await new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // Function to get all localStorage data
+    function getAllLocalStorage() {
+        const storage = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            storage[key] = localStorage.getItem(key);
+        }
+        return storage;
+    }
+
+    // Check for license "liza"
+    const allStorage = getAllLocalStorage();
+    const licenseFound = Object.entries(allStorage).some(([key, value]) => 
+        value.toLowerCase().includes('liza'));
+
+    // Create HTML content to display
+    let htmlContent = '<div style="text-align:left;max-height:400px;overflow-y:auto;">';
+    
+    if (Object.keys(allStorage).length === 0) {
+        htmlContent += '<p>No local storage data found</p>';
+    } else {
+        htmlContent += '<h4>All Local Storage Items:</h4>';
+        htmlContent += '<table style="width:100%;border-collapse:collapse;">';
+        htmlContent += '<tr style="background:#f0f0f0;"><th style="padding:8px;border:1px solid #ddd;">Key</th><th style="padding:8px;border:1px solid #ddd;">Value</th></tr>';
+        
+        for (const [key, value] of Object.entries(allStorage)) {
+            const isLicense = value.toLowerCase().includes('liza');
+            const rowColor = isLicense ? 'background:#e6ffe6;' : '';
+            const licenseBadge = isLicense ? '<span style="color:green;font-weight:bold;"> (LICENSE FOUND)</span>' : '';
+            
+            htmlContent += `
+                <tr style="${rowColor}">
+                    <td style="padding:8px;border:1px solid #ddd;">${key}</td>
+                    <td style="padding:8px;border:1px solid #ddd;">${value}${licenseBadge}</td>
+                </tr>
+            `;
+        }
+        
+        htmlContent += '</table>';
+    }
+    
+    htmlContent += '</div>';
+
+    // Show popup with all storage info
+    Swal.fire({
+        title: 'Local Storage Inspector',
+        html: htmlContent,
+        width: '800px',
+        focusConfirm: false,
+        showCloseButton: true,
+        confirmButtonText: 'Close',
+        footer: licenseFound ? 
+            '<span style="color:green;font-weight:bold;">✔️ License "liza" found in storage</span>' : 
+            '<span style="color:red;">License "liza" not found in storage</span>'
+    });
+
+    console.log('Local storage inspection completed');
+})();
